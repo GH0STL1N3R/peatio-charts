@@ -1,0 +1,30 @@
+replicaCount: 1
+image:
+  repository: amacneil/ripple
+  tag: 0.14.2
+  pullPolicy: IfNotPresent
+xrpd:
+  rpcUser: peatiotech
+  rpcPassword: changeme
+service:
+  name: ripple
+  type: ClusterIP
+  externalPort: 18332
+  internalPort: 18332
+ingress:
+  enabled: true
+  hosts:
+    - xrp.testnet.peatio.tech
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+  tls:
+    - secretName: testnet-peatio-tech-tls
+      hosts:
+        - xrp.testnet.peatio.tech
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 8Gi
+
+

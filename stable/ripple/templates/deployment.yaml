@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: init-config
+          image: "busybox:latest"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["cp", "/tmp/ripple/ripple.conf", "/data/ripple.conf"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /tmp/ripple
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: 
+            - rippled
+            - -testnet
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command: ["/entrypoint.sh", "ripple-cli", "-testnet", "getinfo"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/entrypoint.sh", "ripple-cli", "-testnet", "getinfo"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

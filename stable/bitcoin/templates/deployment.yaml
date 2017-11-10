@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: init-config
+          image: "busybox:latest"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["cp", "/tmp/bitcoin/bitcoin.conf", "/data/bitcoin.conf"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /tmp/bitcoin
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: 
+            - bitcoind
+            - -testnet
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command: ["/entrypoint.sh", "bitcoin-cli", "-testnet", "getinfo"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["/entrypoint.sh", "bitcoin-cli", "-testnet", "getinfo"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
