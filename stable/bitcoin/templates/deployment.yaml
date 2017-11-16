@@ -15,38 +15,37 @@ spec:
         app: {{ template "name" . }}
         release: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
       initContainers:
-        - name: init-config
-          image: "busybox:latest"
+        - name: copy-config
+          image: busybox
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["cp", "/tmp/bitcoin/bitcoin.conf", "/data/bitcoin.conf"]
+          command: ["sh", "-c", "mkdir -p /bitcoin/.bitcoin && cp /tmp/btc/bitcoin.conf /bitcoin/.bitcoin/bitcoin.conf"]
           volumeMounts:
-            - name: data
-              mountPath: /data
             - name: config
-              mountPath: /tmp/bitcoin
+              mountPath: /tmp/btc
+            - name: data
+              mountPath: /bitcoin
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: 
-            - bitcoind
-            - -testnet
           ports:
-            - containerPort: {{ .Values.service.internalPort }}
+            {{- if .Values.bitcoind.port }}
+            - containerPort: {{ .Values.bitcoind.port }}
+              name: btcd
+            {{- end }}
+            {{- if .Values.bitcoind.rpc.port }}
+            - containerPort: {{ .Values.bitcoind.rpc.port }}
+              name: btcd-rpc
+            {{- end }}
           volumeMounts:
             - name: data
-              mountPath: /data
-          livenessProbe:
-            exec:
-              command: ["/entrypoint.sh", "bitcoin-cli", "-testnet", "getinfo"]
-            initialDelaySeconds: 5
-            periodSeconds: 5
-          readinessProbe:
-            exec:
-              command: ["/entrypoint.sh", "bitcoin-cli", "-testnet", "getinfo"]
-            initialDelaySeconds: 5
-            periodSeconds: 5
+              mountPath: /bitcoin
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
       volumes:
         - name: config
           configMap:

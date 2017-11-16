@@ -1,0 +1,56 @@
+.container {
+  margin: 20px auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  padding: 0 10px;
+  line-height: 1.5;
+  max-width: 750px;
+  color: #555;
+}
+
+h1 {
+  color: #333;
+  font-weight: 100;
+  font-size: 2.5em;
+  margin: 0;
+}
+
+p {
+  font-weight: 100;
+  font-size: 1.5em;
+  margin: 10px 0;
+}
+
+a {
+  color: #e42957;
+  padding: 7px 0;
+  text-decoration: none;
+  transition: border-width .1s;
+  border-style: solid;
+  border-width: 0;
+}
+
+a:hover {
+  border-width: 1px 0 1px 0;
+}
+
+::selection {
+  background: #e42957;
+  color: #fff;
+}
+
+#chartsContainer {
+  padding-top: 30px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-content: space-between;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.chart > img {
+  max-width: 100px;
+  margin: 10px;
+}

@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+REPO_URL   = 'https://charts.peatio.tech'
+CHARTS_DIR = 'stable'
+PKG_DIR    = 'static/packages'
+
+charts = Dir.entries(CHARTS_DIR) - %w[. ..]
+
+charts.each do |pkg|
+  puts "Packaging #{pkg}..."
+  puts `helm package #{CHARTS_DIR}/#{pkg} -d #{PKG_DIR}`
+  $?.success? || abort
+end
+
+exec "helm repo index #{PKG_DIR} --url=#{REPO_URL} --merge=#{PKG_DIR}/index.yaml"

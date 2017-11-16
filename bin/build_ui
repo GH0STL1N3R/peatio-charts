@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'psych'
+require 'json'
+
+yml = Psych.load_file('static/packages/index.yaml')['entries']
+jsn = yml.keys.zip(yml.values.flatten).to_h.to_json
+
+File.write('static/ui/js/charts.json', jsn)

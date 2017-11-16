@@ -32,7 +32,7 @@ usePassword: true
 
 
 ## Kubernetes service type
-serviceType: ClusterIP
+serviceType: LoadBalancer
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/

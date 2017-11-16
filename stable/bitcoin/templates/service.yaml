@@ -10,10 +10,18 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.externalPort }}
-      targetPort: {{ .Values.service.internalPort }}
+    {{- if .Values.bitcoind.port }}
+    - port: {{ .Values.bitcoind.port }}
+      targetPort: {{ .Values.bitcoind.port }}
       protocol: TCP
-      name: {{ .Values.service.name }}
+      name: btcd
+    {{- end }}
+    {{- if .Values.bitcoind.rpc.port }}
+    - port: {{ .Values.bitcoind.rpc.port }}
+      targetPort: {{ .Values.bitcoind.rpc.port }}
+      protocol: TCP
+      name: btcd-rpc
+    {{- end }}
   selector:
     app: {{ template "name" . }}
     release: {{ .Release.Name }}

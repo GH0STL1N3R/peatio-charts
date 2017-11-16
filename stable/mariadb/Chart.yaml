@@ -9,7 +9,7 @@ keywords:
 - sql
 - prometheus
 home: https://mariadb.org
-icon: https://bitnami.com/assets/stacks/mariadb/img/mariadb-stack-220x234.png
+icon: https://bitcoin.org/img/icons/opengraph.png
 sources:
 - https://github.com/bitnami/bitnami-docker-mariadb
 - https://github.com/prometheus/mysqld_exporter

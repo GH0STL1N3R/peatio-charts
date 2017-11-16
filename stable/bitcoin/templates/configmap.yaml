@@ -3,22 +3,30 @@ kind: ConfigMap
 metadata:
   name: {{ template "fullname" . }}
   labels:
-    app: {{ template "name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
 data:
   bitcoin.conf: |-
-    server=1
-    daemon=1
+    {{- if .Values.bitcoind.testnet }}
     testnet=1
+    {{- else }}
+    {{- if .Values.bitcoind.regtest }}
+    regtest=1
+    dnsseed=0
+    upnp=0
+    {{- end }}
+    {{- end }}
 
-    # You must set rpcuser and rpcpassword to secure the JSON-RPC api
-    # Please make rpcpassword to something secure, `5gKAgrJv8CQr2CGUhjVbBFLSj29HnE6YGXvfykHJzS3k` for example.
-    # Listen for JSON-RPC connections on <port> (default: 8332 or testnet: 18332)
-    rpcuser={{ .Values.btcd.rpcUser }}
-    rpcpassword={{ .Values.btcd.rpcPassword }}
-    rpcport={{ .Values.service.internalPort }}
+    {{- if .Values.bitcoind.logs }}
+    printtoconsole=1
+    {{- end }}
 
-    # Notify when receiving coins
-    walletnotify=/usr/bin/curl https://{{ .Values.btcd.rpcUser }}:{{ .Values.btcd.rpcPassword }}@{{ .Release.Name }}-rabbitmq:5672/api/exchanges/vhost/amq.default/publish -XPOST -d'{"routing_key":"peatio.deposit.coin","payload":"{\"txid\":\"%s\", \"channel_key\":\"satoshi\"}","payload_encoding":"string"}'
+    server=1
+    port={{ .Values.bitcoind.port }}
+
+    rpcallowip=0.0.0.0/0
+    rpcport={{ .Values.bitcoind.rpc.port }}
+    rpcuser={{ .Values.bitcoind.rpc.username }}
+    rpcpassword={{ .Values.bitcoind.rpc.password }}

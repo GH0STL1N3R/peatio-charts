@@ -55,7 +55,7 @@ rabbitmqVhost: /
 rabbitmqManagerPort: 15672
 
 ## Kubernetes service type
-serviceType: ClusterIP
+serviceType: LoadBalancer
 
 persistence:
   enabled: true
